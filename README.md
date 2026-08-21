@@ -1,6 +1,6 @@
 # qwen38-27b-coding
 
-一组**纯 Python 标准库**编写的小型实用工具：系统资源监控、进程级资源监控、git 周报生成。无需安装任何第三方依赖，macOS / Linux 开箱即用。
+一组**纯 Python 标准库**编写的小型实用工具：系统资源监控、进程级资源监控、git 周报生成、macOS 系统通知。无需安装任何第三方依赖，macOS / Linux 开箱即用（`notify.py` 仅限 macOS）。
 
 ## 文件说明
 
@@ -9,12 +9,14 @@
 | `monitor.py` | 系统资源监控：CPU、内存、磁盘使用率，文本进度条展示 |
 | `procm.py` | 进程级监控：按 CPU / 内存排序的 Top N 进程列表 |
 | `weekly_report.py` | 基于 git log 自动生成开发周报（按仓库、按类型分类统计） |
+| `notify.py` | macOS 系统通知：封装 `osascript` 的 `display notification`，长任务跑完自动弹窗 |
 
 ## 环境要求
 
 - **Python 3.9+**（已在 Python 3.13 下验证），无任何第三方依赖
 - **macOS / Linux**（`monitor.py` 在 Windows 上不支持）
 - `weekly_report.py` 需要目标目录是 git 仓库
+- `notify.py` 依赖 `osascript`，仅限 macOS
 
 ## 使用方式
 
@@ -73,6 +75,27 @@ python3 weekly_report.py -o report.md       # 同时写入文件
 | `-d, --days` | `7` | 统计窗口（天） |
 | `--author` | - | 按作者过滤（git `--author` 语法） |
 | `-o, --output` | - | 将周报额外写入指定文件 |
+
+### 4. notify.py — macOS 系统通知
+
+封装 AppleScript 的 `display notification` 弹出系统通知，特别适合「长任务跑完弹通知」的场景（爬虫、训练、下载、CI 等）。
+
+```bash
+python3 notify.py "下载完成" -t 爬虫          # 基础通知
+python3 notify.py "构建成功" -t CI -s Glass   # 带声音
+python3 notify.py "已完成" -t 任务 -u 3 个文件 # 带副标题
+python3 notify.py -c "python3 crawler.py" -t 爬虫  # 命令跑完弹成功/失败通知
+python3 notify.py --demo                      # 逐个体验所有能力
+```
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `message`（位置参数） | - | 通知正文（`-c` 模式下自动生成） |
+| `-t, --title` | `脚本` | 通知标题 |
+| `-u, --subtitle` | - | 副标题 |
+| `-s, --sound` | - | 系统声音：`Glass` / `Ping` / `Subtle` / `Basso` / `Tink` / `default` |
+| `-c, --cmd` | - | 运行 shell 命令，结束后弹成功/失败通知 |
+| `--demo` | - | 逐个体验各项能力 |
 
 ## 注意事项
 
